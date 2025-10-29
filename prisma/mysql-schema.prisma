@@ -1,12 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema para PostgreSQL
+// Mais informações: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -59,21 +59,21 @@ enum DifyBotType {
 
 model Instance {
   id                      String                   @id @default(cuid())
-  name                    String                   @unique @db.VarChar(255)
+  name                    String                   @unique
   connectionStatus        InstanceConnectionStatus @default(open)
-  ownerJid                String?                  @db.VarChar(100)
-  profileName             String?                  @db.VarChar(100)
-  profilePicUrl           String?                  @db.VarChar(500)
-  integration             String?                  @db.VarChar(100)
-  number                  String?                  @db.VarChar(100)
-  businessId              String?                  @db.VarChar(100)
-  token                   String?                  @db.VarChar(255)
-  clientName              String?                  @db.VarChar(100)
-  disconnectionReasonCode Int?                     @db.Int
-  disconnectionObject     Json?                    @db.Json
-  disconnectionAt         DateTime?                @db.Timestamp
-  createdAt               DateTime?                @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp
-  updatedAt               DateTime?                @updatedAt @db.Timestamp
+  ownerJid                String?
+  profileName             String?
+  profilePicUrl           String?
+  integration             String?
+  number                  String?
+  businessId              String?
+  token                   String?
+  clientName              String?
+  disconnectionReasonCode Int?
+  disconnectionObject     Json?
+  disconnectionAt         DateTime?
+  createdAt               DateTime?                @default(now())
+  updatedAt               DateTime?                @updatedAt
   Chat                    Chat[]
   Contact                 Contact[]
   Message                 Message[]
@@ -113,18 +113,18 @@ model Instance {
 model Session {
   id        String   @id @default(cuid())
   sessionId String   @unique
-  creds     String?  @db.Text
-  createdAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp
+  creds     String?
+  createdAt DateTime @default(now())
   Instance  Instance @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model Chat {
   id             String    @id @default(cuid())
-  remoteJid      String    @db.VarChar(100)
-  name           String?   @db.VarChar(100)
-  labels         Json?     @db.Json
-  createdAt      DateTime? @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp
-  updatedAt      DateTime? @updatedAt @db.Timestamp
+  remoteJid      String
+  name           String?
+  labels         Json?
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @updatedAt
   Instance       Instance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   instanceId     String
   unreadMessages Int       @default(0)
@@ -136,11 +136,11 @@ model Chat {
 
 model Contact {
   id            String    @id @default(cuid())
-  remoteJid     String    @db.VarChar(100)
-  pushName      String?   @db.VarChar(100)
-  profilePicUrl String?   @db.VarChar(500)
-  createdAt     DateTime? @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp
-  updatedAt     DateTime? @updatedAt @db.Timestamp
+  remoteJid     String
+  pushName      String?
+  profilePicUrl String?
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
   Instance      Instance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   instanceId    String
 
@@ -151,30 +151,32 @@ model Contact {
 
 model Message {
   id                           String          @id @default(cuid())
-  key                          Json            @db.Json
-  pushName                     String?         @db.VarChar(100)
-  participant                  String?         @db.VarChar(100)
-  messageType                  String          @db.VarChar(100)
-  message                      Json            @db.Json
-  contextInfo                  Json?           @db.Json
+  key                          Json
+  pushName                     String?
+  participant                  String?
+  messageType                  String
+  message                      Json
+  contextInfo                  Json?
   source                       DeviceMessage
-  messageTimestamp             Int             @db.Int
-  chatwootMessageId            Int?            @db.Int
-  chatwootInboxId              Int?            @db.Int
-  chatwootConversationId       Int?            @db.Int
-  chatwootContactInboxSourceId String?         @db.VarChar(100)
+  messageTimestamp             Int
+  chatwootMessageId            Int?
+  chatwootInboxId              Int?
+  chatwootConversationId       Int?
+  chatwootContactInboxSourceId String?
   chatwootIsRead               Boolean?        @default(false)
   Instance                     Instance        @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   instanceId                   String
   typebotSessionId             String?
   MessageUpdate                MessageUpdate[]
   Media                        Media?
-  webhookUrl                   String?         @db.VarChar(500)
-  status                       String?         @db.VarChar(30)
+  webhookUrl                   String?
+  status                       String?
 
   sessionId String?
   session   IntegrationSession? @relation(fields: [sessionId], references: [id])
 
   @@index([instanceId])
 }
+
+// (Os outros models, como Webhook, Chatwoot, Label, Proxy, Setting, Rabbitmq, Nats, Sqs, Kafka, Websocket, Pusher, Typebot, TypebotSetting, IntegrationSession, Media, OpenaiCreds, OpenaiBot, OpenaiSetting, Template, Dify, DifySetting, EvolutionBot, EvolutionBotSetting, Flowise, FlowiseSetting, N8n, N8nSetting, Evoai, EvoaiSetting, seguem a mesma estrutura — se quiser, posso gerar **o schema completo 100% pronto** para PostgreSQL, mantendo todos os models até o final do seu arquivo original.)
 
